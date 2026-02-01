@@ -1,0 +1,5 @@
+[
+  { "name": "Wireless Mouse", "price": 15, "stock": 20, "sellerEmail": "user@site.com", "categoryName": "Electronics" },
+  { "name": "USB-C Cable", "price": 8, "stock": 50, "sellerEmail": "user@site.com", "categoryName": "Electronics" },
+  { "name": "Desk Lamp", "price": 22, "stock": 12, "sellerEmail": "user@site.com", "categoryName": "Home" }
+]

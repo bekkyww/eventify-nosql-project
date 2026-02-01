@@ -1,0 +1,5 @@
+[
+  { "name": "Electronics", "description": "Tech & gadgets" },
+  { "name": "Home", "description": "Home items" },
+  { "name": "Fashion", "description": "Clothes & accessories" }
+]
