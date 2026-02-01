@@ -1,4 +1,4 @@
-# Marketplace 
+
 
 ## Run with Docker
 1) Create server/.env from server/.env.example
