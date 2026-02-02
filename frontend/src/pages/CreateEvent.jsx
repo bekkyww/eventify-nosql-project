@@ -14,29 +14,59 @@ export default function CreateEvent() {
     description: "",
     city: "Almaty",
     place: "",
-    startAt: new Date(Date.now() + 24*3600*1000).toISOString().slice(0,16),
-    endAt: new Date(Date.now() + 24*3600*1000 + 2*3600*1000).toISOString().slice(0,16),
+    startAt: new Date(Date.now() + 24 * 3600 * 1000).toISOString().slice(0, 16),
+    endAt: new Date(Date.now() + 24 * 3600 * 1000 + 2 * 3600 * 1000).toISOString().slice(0, 16),
     capacity: 50,
     tags: "mongodb,react",
   });
 
+  const [schedule, setSchedule] = useState([{ title: "", time: "" }]);
+
   if (!user || (user.role !== "organizer" && user.role !== "admin")) {
-    return <div className="container"><div className="muted">Organizer only.</div></div>;
+    return (
+      <div className="container">
+        <div className="muted">Organizer only.</div>
+      </div>
+    );
   }
 
-  function set(k, v) { setForm(prev => ({ ...prev, [k]: v })); }
+  function set(k, v) {
+    setForm((prev) => ({ ...prev, [k]: v }));
+  }
+
+  function addScheduleRow() {
+    setSchedule((prev) => [...prev, { title: "", time: "" }]);
+  }
+
+  function removeScheduleRow(idx) {
+    setSchedule((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function updateScheduleRow(idx, key, value) {
+    setSchedule((prev) =>
+      prev.map((row, i) => (i === idx ? { ...row, [key]: value } : row))
+    );
+  }
 
   async function submit(e) {
     e.preventDefault();
     try {
+      const normalizedSchedule = (schedule || [])
+        .filter((x) => (x.title || "").trim() && x.time)
+        .map((x) => ({
+          title: x.title.trim(),
+          time: new Date(x.time).toISOString(),
+        }));
+
       const payload = {
         ...form,
         startAt: new Date(form.startAt).toISOString(),
         endAt: new Date(form.endAt).toISOString(),
         capacity: Number(form.capacity),
-        tags: form.tags.split(",").map(s => s.trim()).filter(Boolean),
-        schedule: []
+        tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
+        schedule: normalizedSchedule, // ✅ instead of []
       };
+
       const data = await EventsAPI.create(payload);
       setMsg("Created (draft) ✅");
       nav(`/events/${data.event._id}`);
@@ -83,7 +113,44 @@ export default function CreateEvent() {
           </div>
         </div>
 
-        <button className="btn" type="submit">Create</button>
+        <label className="label" style={{ marginTop: 10 }}>Schedule</label>
+
+        <div className="panel" style={{ marginTop: 8 }}>
+          {(schedule || []).map((row, idx) => (
+            <div key={idx} className="row gap" style={{ flexWrap: "wrap", marginBottom: 10 }}>
+              <input
+                className="input"
+                placeholder={`Item #${idx + 1} title`}
+                value={row.title}
+                onChange={(e) => updateScheduleRow(idx, "title", e.target.value)}
+                style={{ minWidth: 220, flex: 1 }}
+              />
+              <input
+                className="input"
+                type="datetime-local"
+                value={row.time}
+                onChange={(e) => updateScheduleRow(idx, "time", e.target.value)}
+                style={{ minWidth: 220 }}
+              />
+              <button
+                type="button"
+                className="btn btnGhost"
+                onClick={() => removeScheduleRow(idx)}
+                disabled={schedule.length === 1}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+
+          <button type="button" className="btn" onClick={addScheduleRow}>
+            + Add schedule item
+          </button>
+        </div>
+
+        <button className="btn" type="submit" style={{ marginTop: 12 }}>
+          Create
+        </button>
       </form>
 
       <Toast message={msg} onClose={() => setMsg("")} />
